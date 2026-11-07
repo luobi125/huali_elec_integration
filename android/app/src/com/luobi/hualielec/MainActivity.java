@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
     private final ExecutorService pool = Executors.newSingleThreadExecutor();
 
     private TextView tRoom, tBalance, tEnergy, tReading, tArrears, tYesterday,
-            tMonthKwh, tMonthCost, tDailyCost, tDaysLeft, tStatus, tPrice, tUpdated;
+            tMonthKwh, tMonthCost, tDailyCost, tDaysLeft, tStatus, tPrice, tUpdated, tVersion;
     private Button bRefresh, bRoom, bAlert;
     private boolean loading;
     private boolean dark;
@@ -99,6 +99,11 @@ public class MainActivity extends Activity {
             return;
         }
         refresh();
+
+        // 自动检查更新（一天最多一次）
+        if (Updater.shouldAutoCheck(this)) {
+            checkUpdate(false);
+        }
     }
 
     @Override
@@ -193,7 +198,92 @@ public class MainActivity extends Activity {
 
         tStatus = label(root, "", 13, cWarn);
         tStatus.setPadding(0, dp(14), 0, 0);
+
+        // 版本行：点一下手动检查更新
+        tVersion = label(root, "当前版本 " + Updater.currentVersion(this) + " · 检查更新", 12, cDim);
+        tVersion.setPadding(0, dp(10), 0, 0);
+        tVersion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkUpdate(true);
+            }
+        });
         return scroll;
+    }
+
+    // ---------------------------------------------------------------- 检查更新
+    private void checkUpdate(final boolean manual) {
+        if (manual) {
+            tVersion.setText("正在检查更新…");
+        }
+        pool.execute(new Runnable() {
+            @Override
+            public void run() {
+                Updater.Release rel = null;
+                String err = null;
+                try {
+                    rel = Updater.fetchLatest();
+                } catch (Exception e) {
+                    err = e.getMessage();
+                }
+                final Updater.Release r = rel;
+                final String error = err;
+                ui.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        String cur = Updater.currentVersion(MainActivity.this);
+                        if (r == null) {
+                            Log.w(TAG, "检查更新失败: " + error);
+                            tVersion.setText("当前版本 " + cur + " · 检查更新失败，点此重试");
+                            if (manual) {
+                                Toast.makeText(MainActivity.this, "检查更新失败：" + error,
+                                        Toast.LENGTH_LONG).show();
+                            }
+                            return;
+                        }
+                        Updater.markChecked(getApplicationContext());
+                        int cmp = Updater.compare(r.tag, cur);
+                        Log.i(TAG, "检查更新: 本地 " + cur + " / 最新 " + r.tag
+                                + " / 新版本=" + (cmp > 0) + " / apk=" + r.apkUrl);
+                        tVersion.setText("当前版本 " + cur + " · 已是最新");
+                        if (cmp > 0) {
+                            tVersion.setText("当前版本 " + cur + " · 发现新版本 " + r.tag);
+                            showUpdateDialog(cur, r);
+                        } else if (manual) {
+                            Toast.makeText(MainActivity.this,
+                                    "已是最新版本（" + cur + "）", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void showUpdateDialog(String cur, final Updater.Release rel) {
+        String notes = rel.notes == null ? "" : rel.notes.trim();
+        if (notes.length() > 600) {
+            notes = notes.substring(0, 600) + "…";
+        }
+        String msg = "当前版本：" + cur + "\n最新版本：" + rel.tag
+                + (notes.isEmpty() ? "" : "\n\n" + notes);
+        new AlertDialog.Builder(this)
+                .setTitle("发现新版本")
+                .setMessage(msg)
+                .setPositiveButton("去下载", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        Updater.openUrl(MainActivity.this,
+                                rel.apkUrl.isEmpty() ? rel.pageUrl : rel.apkUrl);
+                    }
+                })
+                .setNeutralButton("发布页", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int which) {
+                        Updater.openUrl(MainActivity.this, rel.pageUrl);
+                    }
+                })
+                .setNegativeButton("稍后", null)
+                .show();
     }
 
     private LinearLayout row(LinearLayout parent) {

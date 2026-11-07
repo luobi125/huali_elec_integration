@@ -126,8 +126,6 @@ def main() -> None:
         "--java", gen,
         "--min-sdk-version", "21",
         "--target-sdk-version", "35",
-        "--version-code", "1",
-        "--version-name", "1.3",
         "--auto-add-overlay",
     ])
 
