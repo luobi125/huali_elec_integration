@@ -4,7 +4,7 @@
 「华立数研智慧微平台」（`dbwx.hlsywy.com`）：
 
 - 🏠 **Home Assistant 自定义集成**：余额、读数、日/月用电、日均花费、预计可用天数，带低余额自动化
-- 📱 **安卓 App**：一个 94 KB 的小 App，带桌面小组件、深色模式、低余额通知、自绘悬浮胶囊
+- 📱 **安卓 App**：一个 98 KB 的小 App，带桌面小组件、深色模式、低余额通知、自绘悬浮胶囊
 
 <p>
 <img src="docs/images/icon.png" width="96" alt="icon">
@@ -42,6 +42,7 @@
 | 深色模式 | —（跟随主题） | ✅ |
 | 桌面小组件 | —（用 Lovelace 卡片） | ✅ |
 | 低余额提醒 | ✅ 自动化 | ✅ 通知 + 悬浮胶囊 |
+| 应用内检查更新 | —（HACS 管） | ✅ 读 GitHub Release |
 | 多校区 | ✅ 4 个 | ✅ 4 个 |
 | 免密码 | ✅ 绑定房号即可 | ✅ 同左 |
 
@@ -147,6 +148,23 @@ adb shell pm grant com.luobi.hualielec android.permission.POST_NOTIFICATIONS   #
 
 ```bash
 adb shell am broadcast -a com.luobi.hualielec.TEST -n com.luobi.hualielec/.CheckReceiver
+```
+
+### 检查更新
+
+App 内置更新检查，更新源就是本仓库的 GitHub Release：
+
+- 启动时自动检查（**24 小时最多一次**，避免打扰，也避免打爆 GitHub 匿名 API 限额）
+- 底部「当前版本 x.y.z · 检查更新」那行**点一下可手动检查**
+- 发现新版本弹窗显示版本号 + Release 说明，三个按钮：**去下载**（直接下 APK）／**发布页**／**稍后**
+- 只认**正式版**：GitHub 的 releases/latest 接口不返回预发布版，所以打了 prerelease 的版本不会被推送
+
+实现见 `android/app/src/com/luobi/hualielec/Updater.java`：
+
+```
+GET https://api.github.com/repos/luobi125/huali_elec_integration/releases/latest
+  → tag_name 与 versionName 做语义化比较（v1.2.3 / 1.2.3-beta 都能解析）
+  → 从 assets 里取第一个 *.apk 的 browser_download_url
 ```
 
 ### 关于「澎湃焦点通知 / 灵动岛」
