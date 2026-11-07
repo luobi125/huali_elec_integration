@@ -10,5 +10,8 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/luobi125/huali_elec_integration/issues",
   "requirements": [],
-  "version": "1.1.0"
+  "version": "1.1.0",
+  "categories": [
+    "energy.meters_monitoring"
+  ]
 }
