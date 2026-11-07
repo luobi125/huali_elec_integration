@@ -224,8 +224,8 @@ public class CheckReceiver extends BroadcastReceiver {
         try {
             android.widget.RemoteViews rv = new android.widget.RemoteViews(
                     PKG, com.luobi.hualielec.R.layout.widget);
-            rv.setTextViewText(com.luobi.hualielec.R.id.w_room, title);
             rv.setTextViewText(com.luobi.hualielec.R.id.w_balance, ticker);
+            rv.setTextViewText(com.luobi.hualielec.R.id.w_sub, title);
             n.extras.putParcelable("miui.focus.rv", rv);
         } catch (Throwable t) {
             Log.w(TAG, "附加 miui.focus.rv 失败: " + t);

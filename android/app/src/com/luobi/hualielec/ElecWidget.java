@@ -9,7 +9,10 @@ import android.content.Intent;
 import android.os.Build;
 import android.widget.RemoteViews;
 
-/** 桌面小组件：显示余额 / 预计可用天数 / 日均花费，点击打开 App。 */
+/**
+ * 桌面小组件（2×1 迷你版）：⚡ 余额 + 一行小字（房号 · 可用天数）。
+ * 点一下进 App，数值来自 App 刷新 / 后台检查写入的缓存。
+ */
 public class ElecWidget extends AppWidgetProvider {
 
     @Override
@@ -29,11 +32,16 @@ public class ElecWidget extends AppWidgetProvider {
     static void update(Context ctx, AppWidgetManager mgr, int[] ids) {
         Prefs p = Prefs.load(ctx);
         RemoteViews rv = new RemoteViews(ctx.getPackageName(), R.layout.widget);
-        rv.setTextViewText(R.id.w_room, p.room);
-        rv.setTextViewText(R.id.w_balance, p.cacheBalance);
-        rv.setTextViewText(R.id.w_days, p.cacheDays.equals("—") ? "—" : p.cacheDays + " 天");
-        rv.setTextViewText(R.id.w_cost, p.cacheCost.equals("—") ? "—" : p.cacheCost + " 元/天");
-        rv.setTextViewText(R.id.w_updated, "更新于 " + p.cacheUpdated);
+
+        rv.setTextViewText(R.id.w_balance, p.cacheBalance.equals("—")
+                ? "—" : p.cacheBalance + " 元");
+
+        String days = p.cacheDays.equals("—") ? "—" : p.cacheDays + " 天";
+        String sub = p.room + " · " + days;
+        if (!p.cacheCost.equals("—")) {
+            sub = sub + " · " + p.cacheCost + "元/天";
+        }
+        rv.setTextViewText(R.id.w_sub, sub);
 
         Intent open = new Intent(ctx, MainActivity.class);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;

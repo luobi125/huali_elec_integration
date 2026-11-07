@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# HA
+.homeassistant/
+config/
+
+# Android 构建产物
+android/build/
+android/HualiElec.apk
+android/*.idsig
+*.apk
+*.keystore
+*.jks
+
+# 工具链（自行下载，不入库）
+android/toolchain/
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+__pycache__/

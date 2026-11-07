@@ -3,88 +3,41 @@
     android:id="@+id/w_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="14dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="10dp"
     android:background="@drawable/widget_bg">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:id="@+id/w_room"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="L9-418"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:textColor="@color/widget_text" />
-
-        <TextView
-            android:id="@+id/w_updated"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="更新于 —"
-            android:textSize="10sp"
-            android:textColor="@color/widget_dim" />
-    </LinearLayout>
+        android:text="⚡"
+        android:textSize="13sp" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="bottom"
-        android:layout_marginTop="2dp">
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="6dp">
 
         <TextView
             android:id="@+id/w_balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="—"
-            android:textSize="34sp"
+            android:maxLines="1"
+            android:textSize="17sp"
             android:textStyle="bold"
             android:textColor="@color/widget_accent" />
 
         <TextView
+            android:id="@+id/w_sub"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=" 元"
-            android:textSize="13sp"
-            android:textColor="@color/widget_dim"
-            android:paddingBottom="6dp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="2dp">
-
-        <TextView
-            android:id="@+id/w_days"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:maxLines="1"
             android:text="— 天"
-            android:textSize="14sp"
-            android:textColor="@color/widget_text" />
-
-        <TextView
-            android:id="@+id/w_cost"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="— 元/天"
-            android:textSize="14sp"
-            android:textColor="@color/widget_text" />
+            android:textSize="9sp"
+            android:textColor="@color/widget_dim" />
     </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="余额 · 可用天数 · 日均花费"
-        android:textSize="10sp"
-        android:textColor="@color/widget_dim" />
 </LinearLayout>

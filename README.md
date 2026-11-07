@@ -62,7 +62,7 @@
 
 ### 1. Home Assistant（HACS）
 
-HACS → 右上角 ⋮ → *自定义存储库* → 填本仓库地址，类别选 **Integration** → 安装 → 重启 HA →
+HACS → 右上角 ⋮ → *自定义存储库* → 填 luobi125/huali_elec_integration，类别选 **Integration** → 安装 → 重启 HA →
 *设置 → 设备与服务 → 添加集成 → 华立电表* → 选校区 + 房号。
 
 手动安装：把 `custom_components/huali_elec` 复制到 HA 配置目录的 `custom_components/` 下，重启。
@@ -127,7 +127,8 @@ adb shell pm grant com.luobi.hualielec android.permission.POST_NOTIFICATIONS   #
 
 ### 桌面小组件
 
-4×2 小组件显示 房号 / 余额 / 预计可用 / 日均花费 / 更新时间，点击进 App，数值来自缓存（不联网也能看）。
+**2×1 迷你小组件**：大号余额 + 一行小字（房号 · 可用天数 · 日均花费），点一下进 App，
+数值来自缓存（不联网也能看）。想再大一点可以横向拉伸。
 
 ### 深色模式
 
@@ -254,7 +255,7 @@ git init
 git add .
 git commit -m "feat: HA integration + Android app for Huali dorm meter"
 git branch -M main
-git remote add origin https://github.com/<你的用户名>/huali_elec.git
+git remote add origin https://github.com/luobi125/huali_elec_integration.git
 git push -u origin main
 
 # 2. 打个 tag + Release，把 APK 作为附件上传
