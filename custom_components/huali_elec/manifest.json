@@ -1,6 +1,9 @@
 {
   "domain": "huali_elec",
   "name": "华立电表",
+  "categories": [
+    "energy.meters_monitoring"
+  ],
   "codeowners": [
     "@luobi125"
   ],
@@ -10,8 +13,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/luobi125/huali_elec_integration/issues",
   "requirements": [],
-  "version": "1.1.0",
-  "categories": [
-    "energy.meters_monitoring"
-  ]
+  "version": "1.1.0"
 }
