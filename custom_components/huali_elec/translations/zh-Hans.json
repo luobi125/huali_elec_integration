@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "华立电表",
+        "description": "选择校区并填写宿舍房间号（例如 {example}）。\n\n房号可以在 [华立电表]({url}) 里查到（微信端「用户管理 → 选择楼栋」的房号列表）。\n集成会用一个独立标识绑定该房间，不会影响你微信里的绑定。",
+        "data": {
+          "campus": "校区",
+          "room": "房间号"
+        }
+      }
+    },
+    "error": {
+      "invalid_room": "未查询到该房间，请检查楼栋与房号（例如 A1-105）。",
+      "cannot_connect": "无法连接 dbwx.hlsywy.com，请检查网络后重试。",
+      "bind_failed": "绑定房间失败，请稍后重试。",
+      "unknown": "未知错误，请查看 Home Assistant 日志。"
+    },
+    "abort": {
+      "already_configured": "该房间已经配置过了。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "华立电表选项",
+        "description": "调整刷新间隔。电费数据每 30 分钟刷新一次已经足够，间隔过短可能被服务器限流。",
+        "data": {
+          "scan_interval": "刷新间隔（分钟）"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "电表余额"
+      },
+      "remaining_energy": {
+        "name": "剩余电量"
+      },
+      "meter_reading": {
+        "name": "抄表读数"
+      },
+      "arrears": {
+        "name": "欠费金额"
+      },
+      "daily_usage": {
+        "name": "最近一日用电"
+      },
+      "month_usage": {
+        "name": "本月用电"
+      },
+      "month_cost": {
+        "name": "本月电费"
+      },
+      "daily_cost": {
+        "name": "日均花费"
+      },
+      "days_left": {
+        "name": "预计可用天数"
+      }
+    }
+  }
+}

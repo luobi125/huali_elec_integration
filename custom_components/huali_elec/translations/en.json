@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Huali dormitory meter",
+        "description": "Pick your campus and enter the dormitory room code (for example {example}).\n\nThe room code can be found in the [Huali meter site]({url}) (WeChat: 用户管理 → 选择楼栋).\nThe integration binds the room with its own identifier; your WeChat binding is not affected.",
+        "data": {
+          "campus": "Campus",
+          "room": "Room code"
+        }
+      }
+    },
+    "error": {
+      "invalid_room": "Room not found, please double-check the building and room code (for example A1-105).",
+      "cannot_connect": "Cannot reach dbwx.hlsywy.com, please try again later.",
+      "bind_failed": "Unable to bind the room, please try again later.",
+      "unknown": "Unexpected error, check the Home Assistant log."
+    },
+    "abort": {
+      "already_configured": "This room is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Huali meter options",
+        "description": "Adjust the polling interval. Every 30 minutes is plenty; shorter intervals may be rate limited.",
+        "data": {
+          "scan_interval": "Polling interval (minutes)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Balance"
+      },
+      "remaining_energy": {
+        "name": "Remaining energy"
+      },
+      "meter_reading": {
+        "name": "Meter reading"
+      },
+      "arrears": {
+        "name": "Arrears"
+      },
+      "daily_usage": {
+        "name": "Last day usage"
+      },
+      "month_usage": {
+        "name": "Usage this month"
+      },
+      "month_cost": {
+        "name": "Cost this month"
+      },
+      "daily_cost": {
+        "name": "Daily cost"
+      },
+      "days_left": {
+        "name": "Days remaining"
+      }
+    }
+  }
+}

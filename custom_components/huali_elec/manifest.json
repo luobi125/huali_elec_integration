@@ -1,0 +1,12 @@
+{
+  "domain": "huali_elec",
+  "name": "华立电表",
+  "codeowners": ["@luobi"],
+  "config_flow": true,
+  "documentation": "https://github.com/luobi/huali_elec",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/luobi/huali_elec/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}

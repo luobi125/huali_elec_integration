@@ -1,0 +1,37 @@
+- id: huali_elec_low_credit_l9_418
+  alias: 宿舍电费告警（L9-418）
+  description: 余额低于 20 元或预计可用不足 3 天时提醒充值；充值恢复后自动清掉提醒
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.l9_418_su_she_dian_biao_balance
+      below: 20
+      id: low_balance
+    - trigger: numeric_state
+      entity_id: sensor.l9_418_su_she_dian_biao_days_remaining
+      below: 3
+      id: low_days
+    - trigger: numeric_state
+      entity_id: sensor.l9_418_su_she_dian_biao_days_remaining
+      above: 6
+      id: recovered
+  conditions: []
+  actions:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.id | default('') == 'recovered' }}"
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: huali_elec_low_credit_l9_418
+      default:
+        - action: persistent_notification.create
+          data:
+            title: ⚡ L9-418 电费快用完了
+            notification_id: huali_elec_low_credit_l9_418
+            message: >-
+              当前余额 {{ states('sensor.l9_418_su_she_dian_biao_balance') }} 元，
+              日均花费 {{ states('sensor.l9_418_su_she_dian_biao_daily_cost') }} 元/天，
+              预计还能用 {{ states('sensor.l9_418_su_she_dian_biao_days_remaining') }} 天。
+              记得在微信「华立电表」里充值（{{ now().strftime('%m-%d %H:%M') }} 抄表数据）。
+  mode: single
