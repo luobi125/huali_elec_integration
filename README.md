@@ -236,6 +236,13 @@ D EmptyNotif: requestFocusNotificationView: 0|com.luobi.hualielec|919 content: F
 > 直接跳到 generic 分支，右侧模块压根不会创建（宽度仍被保留，所以看起来像「留了空位没内容」）。
 > 另外「小岛」是从 `bigIslandArea` 派生的，`smallIslandArea` 里再写一遍右侧是无效的。
 
+> 左右两段的对齐和间距**改不了**：SystemUI 给小岛左右各一个固定宽度槽位（实测 210px / 76dp），
+> 左段文字贴槽位左缘、右段贴右缘，中间固定留 ~41dp。`ImageTextInfo` / `TextInfo` /
+> `SameWidthDigitInfo` / `FixedWidthDigitInfo` 这些模型里都没有 gravity / padding 字段，
+> `IslandRightTextViewHolder.updateWidth()` 的 case1~case7 只控制 frontTitle / title / content
+> 三段文字显示哪几段，不涉及对齐。试过往两侧补空格、加长文案、换 `islandProperty`、
+> 给右侧加图标，空隙始终在 88~114px 之间（胶囊宽度 485/605/657 分档跳变，内容一长就跳档把空隙补回来）。
+
 放行规则（`canShowFocus`）：国内版 HyperOS 一般是应用商店上架 + 审核后放行；本机实测侧载包也返回 true。
 拿不到放行时，App 会自动退回**自绘悬浮胶囊**（`Island.java`），保证任何设备都有提醒。
 
