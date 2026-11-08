@@ -185,18 +185,21 @@ HyperOS 上电量告警会**直接进系统超级岛**，不用自绘悬浮窗�
     "business": "huali_elec_bill",
     "updatable": true,
     "enableFloat": false,
-    "ticker": "15.00元 · 宿舍电费 L9-418",
-    "aodTitle": "15.00元",
+    "ticker": "2.4天 · 15.00元",
+    "aodTitle": "2.4天",
     "param_island": {
       "islandProperty": 1,
       "bigIslandArea": {
         "imageTextInfoLeft": {
           "type": 1,
           "picInfo": {"type": 1, "pic": "miui.focus.pic_icon"},
+          "textInfo": {"title": "2.4天"}
+        },
+        "imageTextInfoRight": {
+          "type": 2,
           "textInfo": {"title": "15.00元"}
         }
-      },
-      "smallIslandArea": {"picInfo": {"type": 1, "pic": "miui.focus.pic_icon"}}
+      }
     },
     "baseInfo": {"type": 2, "title": "宿舍电费 L9-418", "content": "余额 15.00 元 · 可用 2.4 天"}
   }
@@ -220,12 +223,18 @@ I HualiElec: 焦点通知模板已附加(492 bytes): 15.00元
 D EmptyNotif: requestFocusNotificationView: 0|com.luobi.hualielec|919 content: FocusNotificationContentImpl@8308187
 ```
 
-- 小岛：`⚡ 2.4天 · 15.00元`（左=可用天数，右=余额）
+- 小岛：`⚡ 2.4天      15.00元`（左区=可用天数，右区=余额）
 - 展开：`宿舍电费 L9-418` / `余额 15.00 元 · 可用 2.4 天`（`baseInfo`）
 
-> 小岛右区 `imageTextInfoRight` 在 HyperOS OS3.0 上实测**不渲染**（试过 `type:1/5`、带/不带 `picInfo`、
-> `textInfo.subTitle`、`iconTextInfo` 共 5 种写法，只有左区 `imageTextInfoLeft` 生效，但右区宽度仍被保留），
-> 所以两个数值放进左区同一行文字。若后续系统支持右区，模板里已经写好了 `imageTextInfoRight`，会自动显示。
+| 区域 | 内容 | 模板字段 |
+|---|---|---|
+| 小岛左 | 可用天数（带应用图标） | `bigIslandArea.imageTextInfoLeft` |
+| 小岛右 | 余额 | `bigIslandArea.imageTextInfoRight` |
+
+> **右侧 `type` 必须是 `2`**（`3`/`4` 也有效）。写 `1` 或 `5` 时右侧永远是空白 ——
+> SystemUI 里 `IslandTemplateFactory.chooseModule()` 的 `area_right` 分支会先把 `type == 1` / `type == 5`
+> 直接跳到 generic 分支，右侧模块压根不会创建（宽度仍被保留，所以看起来像「留了空位没内容」）。
+> 另外「小岛」是从 `bigIslandArea` 派生的，`smallIslandArea` 里再写一遍右侧是无效的。
 
 放行规则（`canShowFocus`）：国内版 HyperOS 一般是应用商店上架 + 审核后放行；本机实测侧载包也返回 true。
 拿不到放行时，App 会自动退回**自绘悬浮胶囊**（`Island.java`），保证任何设备都有提醒。

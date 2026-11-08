@@ -304,7 +304,7 @@ public class CheckReceiver extends BroadcastReceiver {
     }
 
     /** 按 HyperOS 文档的 param_v2 模板生成 JSON（超长会截断到 3072 字节内）。
-     *  小岛：左 imageTextInfoLeft = 可用天数（带应用图标），右 imageTextInfoRight = 余额。 */
+     *  小岛：左 imageTextInfoLeft = 可用天数（带应用图标），右 imageTextInfoRight = 余额（type 必须是 2）。 */
     private static String focusTemplate(String leftWord, String rightWord, String title,
                                         String content) throws Exception {
         String lw = leftWord.length() > 6 ? leftWord.substring(0, 6) : leftWord;
@@ -312,27 +312,24 @@ public class CheckReceiver extends BroadcastReceiver {
         String t = title;
         String c = content;
         while (true) {
+            // 结构参考 SystemUI 里的 parseOS2DefaultIslandData：
+            // 系统自己构建时只写 bigIslandArea（imageTextInfoLeft + imageTextInfoRight），不写 smallIslandArea。
             JSONObject pic = new JSONObject().put("type", 1).put("pic", PIC_ICON);
-            // HyperOS 3.0 的小岛只渲染左区（imageTextInfoRight 试过 type1/5、带图、subTitle 都不显示），
-            // 所以把「可用天数 · 余额」放在同一行文字里；右区仍写入，等系统以后支持就能直接显示。
             JSONObject leftInfo = new JSONObject()
                     .put("type", 1)
                     .put("picInfo", pic)
-                    .put("textInfo", new JSONObject().put("title", lw + " · " + rw));
+                    .put("textInfo", new JSONObject().put("title", lw));
+            // SystemUI 的 IslandTemplateFactory.chooseModule() 里，area_right 分支只认
+            // type = 2 / 3 / 4；写 1 或 5 会直接落到 generic 分支，右侧就永远空白（踩过的坑）。
             JSONObject rightInfo = new JSONObject()
-                    .put("type", 1)
-                    .put("picInfo", pic)
+                    .put("type", 2)
                     .put("textInfo", new JSONObject().put("title", rw));
-            JSONObject small = new JSONObject()
-                    .put("imageTextInfoLeft", leftInfo)
-                    .put("imageTextInfoRight", rightInfo);
             JSONObject bigArea = new JSONObject()
                     .put("imageTextInfoLeft", leftInfo)
                     .put("imageTextInfoRight", rightInfo);
             JSONObject island = new JSONObject()
                     .put("islandProperty", 1)
-                    .put("bigIslandArea", bigArea)
-                    .put("smallIslandArea", small);
+                    .put("bigIslandArea", bigArea);
             JSONObject baseInfo = new JSONObject()
                     .put("type", 2)
                     .put("title", t)
@@ -363,16 +360,12 @@ public class CheckReceiver extends BroadcastReceiver {
         return v == Math.round(v) ? String.valueOf((int) v) : String.valueOf(v);
     }
 
-    /** 调试用变体（通过广播 extra "variant" 指定），只影响小岛右侧写法。 */
-    private static volatile String debugVariant = "";
-
     private static void postTest(Context ctx) {
         postTest(ctx, "");
     }
 
     /** 设置页里的「测试」按钮：不联网，直接发一条样例提醒（顺便验证澎湃焦点通知）。 */
     static void postTest(Context ctx, String variant) {
-        debugVariant = variant;
         Prefs p = Prefs.load(ctx);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) {
