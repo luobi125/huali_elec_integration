@@ -63,7 +63,8 @@ public class CheckReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, Intent intent) {
         String action = intent == null ? null : intent.getAction();
         if (ACTION_TEST.equals(action)) {
-            postTest(context.getApplicationContext());
+            String variant = intent == null ? "" : intent.getStringExtra("variant");
+            postTest(context.getApplicationContext(), variant == null ? "" : variant);
             return;
         }
         if (!ACTION_CHECK.equals(action)) {
@@ -189,10 +190,10 @@ public class CheckReceiver extends BroadcastReceiver {
         Notification notification = b.build();
 
         // 澎湃焦点通知（JSON 模板 + 图标，不需要 RemoteViews）
-        String islandWord = balanceText + "元";
         String islandTitle = "宿舍电费 " + p.room;
         String islandContent = "余额 " + balanceText + " 元 · 可用 " + daysText + " 天";
-        applyHyperOsFocus(ctx, notification, islandTitle, islandWord, islandContent);
+        applyHyperOsFocus(ctx, notification, islandTitle,
+                daysText + "天", balanceText + "元", islandContent);
 
         nm.notify(notifyId, notification);
         Log.i(TAG, "已发通知: " + sb);
@@ -270,7 +271,7 @@ public class CheckReceiver extends BroadcastReceiver {
      * 塞 RemoteViews 会让 SystemUI 走 inflate 流程，那一步有签名白名单校验（会 onAuthFailed）。
      */
     private static void applyHyperOsFocus(Context ctx, Notification n,
-                                          String title, String word, String content) {
+                                          String title, String word, String rightWord, String content) {
         if (n == null || !isMiuiFamily()) {
             return;
         }
@@ -284,7 +285,7 @@ public class CheckReceiver extends BroadcastReceiver {
             n.extras = new Bundle();
         }
         try {
-            String json = focusTemplate(word, title, content);
+            String json = focusTemplate(word, rightWord, title, content);
             Icon icon = Icon.createWithResource(ctx, com.luobi.hualielec.R.mipmap.ic_launcher);
             Bundle pics = new Bundle();
             pics.putParcelable(PIC_ICON, icon);
@@ -302,22 +303,36 @@ public class CheckReceiver extends BroadcastReceiver {
         }
     }
 
-    /** 按 HyperOS 文档的 param_v2 模板生成 JSON（超长会截断到 3072 字节内）。 */
-    private static String focusTemplate(String word, String title, String content) throws Exception {
-        String w = word.length() > 6 ? word.substring(0, 6) : word;
+    /** 按 HyperOS 文档的 param_v2 模板生成 JSON（超长会截断到 3072 字节内）。
+     *  小岛：左 imageTextInfoLeft = 可用天数（带应用图标），右 imageTextInfoRight = 余额。 */
+    private static String focusTemplate(String leftWord, String rightWord, String title,
+                                        String content) throws Exception {
+        String lw = leftWord.length() > 6 ? leftWord.substring(0, 6) : leftWord;
+        String rw = rightWord.length() > 6 ? rightWord.substring(0, 6) : rightWord;
         String t = title;
         String c = content;
         while (true) {
             JSONObject pic = new JSONObject().put("type", 1).put("pic", PIC_ICON);
-            JSONObject imageTextLeft = new JSONObject()
+            // HyperOS 3.0 的小岛只渲染左区（imageTextInfoRight 试过 type1/5、带图、subTitle 都不显示），
+            // 所以把「可用天数 · 余额」放在同一行文字里；右区仍写入，等系统以后支持就能直接显示。
+            JSONObject leftInfo = new JSONObject()
                     .put("type", 1)
                     .put("picInfo", pic)
-                    .put("textInfo", new JSONObject().put("title", w));
-            JSONObject bigArea = new JSONObject().put("imageTextInfoLeft", imageTextLeft);
+                    .put("textInfo", new JSONObject().put("title", lw + " · " + rw));
+            JSONObject rightInfo = new JSONObject()
+                    .put("type", 1)
+                    .put("picInfo", pic)
+                    .put("textInfo", new JSONObject().put("title", rw));
+            JSONObject small = new JSONObject()
+                    .put("imageTextInfoLeft", leftInfo)
+                    .put("imageTextInfoRight", rightInfo);
+            JSONObject bigArea = new JSONObject()
+                    .put("imageTextInfoLeft", leftInfo)
+                    .put("imageTextInfoRight", rightInfo);
             JSONObject island = new JSONObject()
                     .put("islandProperty", 1)
                     .put("bigIslandArea", bigArea)
-                    .put("smallIslandArea", new JSONObject().put("picInfo", pic));
+                    .put("smallIslandArea", small);
             JSONObject baseInfo = new JSONObject()
                     .put("type", 2)
                     .put("title", t)
@@ -327,8 +342,8 @@ public class CheckReceiver extends BroadcastReceiver {
                     .put("business", "huali_elec_bill")
                     .put("updatable", true)
                     .put("enableFloat", false)
-                    .put("ticker", w + " · " + t)
-                    .put("aodTitle", w)
+                    .put("ticker", lw + " · " + rw)
+                    .put("aodTitle", lw)
                     .put("param_island", island)
                     .put("baseInfo", baseInfo);
             String json = new JSONObject().put("param_v2", v2).toString();
@@ -348,8 +363,16 @@ public class CheckReceiver extends BroadcastReceiver {
         return v == Math.round(v) ? String.valueOf((int) v) : String.valueOf(v);
     }
 
+    /** 调试用变体（通过广播 extra "variant" 指定），只影响小岛右侧写法。 */
+    private static volatile String debugVariant = "";
+
+    private static void postTest(Context ctx) {
+        postTest(ctx, "");
+    }
+
     /** 设置页里的「测试」按钮：不联网，直接发一条样例提醒（顺便验证澎湃焦点通知）。 */
-    static void postTest(Context ctx) {
+    static void postTest(Context ctx, String variant) {
+        debugVariant = variant;
         Prefs p = Prefs.load(ctx);
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) {

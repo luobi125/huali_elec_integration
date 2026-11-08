@@ -431,7 +431,7 @@ public class MainActivity extends Activity {
                 .setNeutralButton("测试", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface d, int which) {
-                        CheckReceiver.postTest(getApplicationContext());
+                        CheckReceiver.postTest(getApplicationContext(), "");
                         Toast.makeText(MainActivity.this,
                                 CheckReceiver.canNotify(getApplicationContext())
                                         ? "已发送测试通知"
