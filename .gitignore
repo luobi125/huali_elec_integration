@@ -26,3 +26,6 @@ android/toolchain/
 .DS_Store
 Thumbs.db
 __pycache__/
+
+# 临时输出文件
+*.out
