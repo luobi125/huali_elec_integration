@@ -167,12 +167,67 @@ GET https://api.github.com/repos/luobi125/huali_elec_integration/releases/latest
   → 从 assets 里取第一个 *.apk 的 browser_download_url
 ```
 
-### 关于「澎湃焦点通知 / 灵动岛」
+### 澎湃超级岛 / 焦点通知（已跑通）
 
-HyperOS 3 的焦点通知对第三方 App 是**签名白名单**制（`MIUISystemUIPlugin` 里的
-`SignatureChecker` 会拿 App 签名 SHA-256 去比对小米云控白名单），侧载 debug 签名会被
-`FocusPlugin: onAuthFailed` 拒绝。App 里保留了 `miui.focus.*` extras（一旦放行即可生效），
-视觉上由自绘悬浮胶囊替代。想走官方灵动岛只有一条路：走小米开放平台申请（需要企业资质）。
+HyperOS 上电量告警会**直接进系统超级岛**，不用自绘悬浮窗。关键有两点：
+
+1. **别塞 RemoteViews**。`miui.focus.rv` 会让 SystemUI 走 inflate 流程，而 inflate 那步有签名白名单校验
+   （`MIUI系统UI插件` 里的 `SignatureChecker` 比对小米云控名单），自签名 APK 必定 `onAuthFailed`。
+2. **用官方 JSON 模板**：`miui.focus.param`（字符串）+ `miui.focus.pics`（图标 Bundle），
+   由 SystemUI 自己渲染岛内布局，完全不经过 inflate。
+
+模板结构（`param_v2`，UTF-8 上限 3072 字节）：
+
+```json
+{
+  "param_v2": {
+    "protocol": 1,
+    "business": "huali_elec_bill",
+    "updatable": true,
+    "enableFloat": false,
+    "ticker": "15.00元 · 宿舍电费 L9-418",
+    "aodTitle": "15.00元",
+    "param_island": {
+      "islandProperty": 1,
+      "bigIslandArea": {
+        "imageTextInfoLeft": {
+          "type": 1,
+          "picInfo": {"type": 1, "pic": "miui.focus.pic_icon"},
+          "textInfo": {"title": "15.00元"}
+        }
+      },
+      "smallIslandArea": {"picInfo": {"type": 1, "pic": "miui.focus.pic_icon"}}
+    },
+    "baseInfo": {"type": 2, "title": "宿舍电费 L9-418", "content": "余额 15.00 元 · 可用 2.4 天"}
+  }
+}
+```
+
+配套的 `miui.focus.pics` 是 `Bundle{ "miui.focus.pic_icon" -> Icon.createWithResource(ctx, R.mipmap.ic_launcher) }`。
+
+运行时先问一次系统放不放行（binder 调到 SystemUI，缓存 1 分钟）：
+
+```
+content://miui.statusbar.notification.public → call("canShowFocus", bundle{package})
+Settings.System.getInt(cr, "notification_focus_protocol")  // 1=HyperOS1 2=HyperOS2 3=HyperOS3(超级岛)
+```
+
+实测（Xiaomi 14 / HyperOS OS3.0 / Android 16）：
+
+```
+I HualiElec: 焦点通知: protocol=3 canShowFocus=true
+I HualiElec: 焦点通知模板已附加(492 bytes): 15.00元
+D EmptyNotif: requestFocusNotificationView: 0|com.luobi.hualielec|919 content: FocusNotificationContentImpl@8308187
+```
+
+- 小岛：`⚡ 15.00元`（`smallIslandArea` + `aodTitle`）
+- 展开：`宿舍电费 L9-418` / `余额 15.00 元 · 可用 2.4 天`（`baseInfo`）
+
+放行规则（`canShowFocus`）：国内版 HyperOS 一般是应用商店上架 + 审核后放行；本机实测侧载包也返回 true。
+拿不到放行时，App 会自动退回**自绘悬浮胶囊**（`Island.java`），保证任何设备都有提醒。
+
+> 模板格式参考：Xiaomi HyperOS 开放文档 `pId=2131` / 限额 `pId=2146`，以及开源项目
+> [lxsfful/dsh-go](https://github.com/lxsfful/dsh-go) 的 `notify/XiaomiFocus.kt` 实现。
 
 ---
 
